@@ -103,6 +103,7 @@
   .c-silver { color:var(--silver); }
   .c-white { color:var(--white); }
   .c-dimwhite { color:rgba(255,255,255,0.65); }
+  .card-dark .cap-text.c-white { color:var(--white); }
 
   /* COMPONENTS */
   .tag {
@@ -165,6 +166,23 @@
   .ph4 { background:var(--red); color:white; }
   .phase-block .ph-label { font-size:9px; opacity:0.8; margin-bottom:4px; }
   .phase-block .ph-months { font-size:16px; font-weight:900; display:block; margin-top:4px; }
+  .slide-plan { background:linear-gradient(180deg, #f7f7f8 0%, #f1f1f3 100%); }
+  .slide-plan .eyebrow { color:var(--red); }
+  .slide-plan .phase-bar {
+    max-width:660px; margin:20px auto 24px; border-radius:10px; overflow:hidden;
+    box-shadow:0 8px 28px rgba(52,55,63,0.08);
+  }
+  .slide-plan .phase-block { box-shadow:inset -1px 0 0 rgba(255,255,255,0.18); }
+  .slide-plan .phase-block .bold-sm { font-size:14px; line-height:1.2; }
+  .slide-plan-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:14px; }
+  .slide-plan-card {
+    background:var(--white); border:1px solid #d9dbe0; border-top:4px solid var(--red);
+    border-radius:14px; padding:22px 20px; box-shadow:0 4px 18px rgba(52,55,63,0.05);
+  }
+  .slide-plan-card .plan-title { font-size:24px; font-weight:800; color:var(--dark); margin-bottom:14px; }
+  .slide-plan-card .cap-item { margin-bottom:16px; }
+  .slide-plan-card .cap-text { color:var(--dark); font-size:16px; font-weight:600; line-height:1.4; }
+  .slide-plan-card .cap-dot { margin-top:7px; }
 
   .tier-row { display:grid; grid-template-columns:80px 1fr 1fr; gap:12px; align-items:center; margin-bottom:12px; }
   .tier-num { width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900; }
@@ -195,6 +213,26 @@
   .cadence-row { display:grid; grid-template-columns:120px 1fr; gap:16px; align-items:center; padding:12px 0; border-bottom:1px solid var(--mid); }
   .cadence-row:last-child { border-bottom:none; }
   .cad-freq { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--red); }
+  .cadence-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px; }
+  .cadence-card {
+    background:var(--white); border:1px solid var(--mid); border-left:5px solid var(--red);
+    border-radius:12px; padding:18px 20px; box-shadow:0 2px 18px rgba(0,0,0,0.04);
+  }
+  .cadence-card .cad-freq {
+    display:inline-block; background:rgba(225,36,42,0.1); padding:5px 10px; border-radius:999px;
+    font-size:10px; letter-spacing:1.2px; margin-bottom:10px;
+  }
+  .cadence-copy { font-size:16px; line-height:1.45; color:var(--dark); font-weight:600; }
+  .cadence-copy strong { color:var(--red); }
+  .cadence-callout {
+    margin-top:18px; max-width:860px; background:linear-gradient(135deg, rgba(225,36,42,0.12), rgba(225,36,42,0.04));
+    border:1px solid rgba(225,36,42,0.22); border-left:6px solid var(--red); border-radius:14px;
+    padding:18px 22px; display:flex; gap:14px; align-items:flex-start;
+  }
+  .cadence-callout-icon {
+    width:38px; height:38px; border-radius:50%; background:var(--red); color:var(--white);
+    display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
+  }
 
   .bar-wrap { margin:8px 0; }
   .bar-label { display:flex; justify-content:space-between; font-size:11px; font-weight:600; margin-bottom:4px; }
@@ -842,42 +880,42 @@
 </div>
 
 <!-- ═══ SLIDE 20: 4-Phase Plan ═══ -->
-<div class="slide t-dark sl-full">
-  <div class="eyebrow white">Four-Phase Implementation</div>
+<div class="slide slide-plan sl-full">
+  <div class="eyebrow">Four-Phase Implementation</div>
   <div class="phase-bar" style="margin:20px 0 24px;">
     <div class="phase-block ph1"><div class="ph-label">Phase 1</div><div class="bold-sm c-red">Assessment</div><span class="ph-months">0–3 mo</span></div>
     <div class="phase-block ph2"><div class="ph-label">Phase 2</div><div class="bold-sm" style="color:var(--red);">Pilot</div><span class="ph-months">3–6 mo</span></div>
-    <div class="phase-block ph3"><div class="ph-label">Phase 3</div><div class="bold-sm c-white">Rollout</div><span class="ph-months">6–12 mo</span></div>
-    <div class="phase-block ph4"><div class="ph-label">Phase 4</div><div class="bold-sm c-white">Optimize</div><span class="ph-months">12+ mo</span></div>
+    <div class="phase-block ph3" style="color:var(--dark);"><div class="ph-label">Phase 3</div><div class="bold-sm" style="color:var(--dark);">Rollout</div><span class="ph-months">6–12 mo</span></div>
+    <div class="phase-block ph4" style="color:var(--dark);"><div class="ph-label">Phase 4</div><div class="bold-sm" style="color:var(--dark);">Optimize</div><span class="ph-months">12+ mo</span></div>
   </div>
-  <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px;">
-    <div class="card-dark">
-      <div class="bold-sm c-red" style="margin-bottom:8px;">Phase 1</div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Data landscape audit</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Use case portfolio</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Part 11 gap assessment</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">AI governance committee</div></div>
+  <div class="slide-plan-grid">
+    <div class="slide-plan-card">
+      <div class="plan-title" style="color:var(--red);">Phase 1</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Data landscape audit</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Use case portfolio</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Part 11 gap assessment</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">AI governance committee</div></div>
     </div>
-    <div class="card-dark">
-      <div class="bold-sm c-white" style="margin-bottom:8px;">Phase 2</div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">50–200 users, 3–5 depts</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">20–50 Claude seats</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">15%+ budget on training</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Tier 1 use cases only</div></div>
+    <div class="slide-plan-card">
+      <div class="plan-title">Phase 2</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">50-200 users, 3-5 depts</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">20-50 Claude seats</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">15%+ budget on training</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Tier 1 use cases only</div></div>
     </div>
-    <div class="card-dark">
-      <div class="bold-sm c-white" style="margin-bottom:8px;">Phase 3</div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Expand high-ROI depts</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Pharma-specific agents</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Tier 2 with approval</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Hybrid chargeback</div></div>
+    <div class="slide-plan-card">
+      <div class="plan-title">Phase 3</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Expand high-ROI depts</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Pharma-specific agents</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Tier 2 with approval</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Hybrid chargeback</div></div>
     </div>
-    <div class="card-dark">
-      <div class="bold-sm c-white" style="margin-bottom:8px;">Phase 4</div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Quarterly right-sizing</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Model routing A/B tests</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Full ERP chargeback</div></div>
-      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">EU AI Act review</div></div>
+    <div class="slide-plan-card">
+      <div class="plan-title">Phase 4</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Quarterly right-sizing</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Model routing A/B tests</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Full ERP chargeback</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">EU AI Act review</div></div>
     </div>
   </div>
 </div>
@@ -885,31 +923,32 @@
 <!-- ═══ SLIDE 21: Review Cadence ═══ -->
 <div class="slide t-light sl-full">
   <div class="eyebrow red">Governance Review Cadence</div>
-  <div style="max-width:700px; margin-top:16px;">
-    <div class="cadence-row">
+  <h2 class="c-dark" style="font-size:42px; max-width:760px; margin-top:8px;">A review rhythm that keeps governance current as agent capabilities evolve.</h2>
+  <div class="cadence-grid">
+    <div class="cadence-card">
       <div class="cad-freq">Weekly</div>
-      <div class="sub-sm c-dark">Usage monitoring · Anomaly detection · Champion check-ins</div>
+      <div class="cadence-copy">Usage monitoring, anomaly detection, and <strong>champion check-ins</strong>.</div>
     </div>
-    <div class="cadence-row">
+    <div class="cadence-card">
       <div class="cad-freq">Monthly</div>
-      <div class="sub-sm c-dark">License utilization review · Cost showback/chargeback · Security incident review</div>
+      <div class="cadence-copy">License utilization review, cost showback, and <strong>security incident review</strong>.</div>
     </div>
-    <div class="cadence-row">
+    <div class="cadence-card">
       <div class="cad-freq">Quarterly</div>
-      <div class="sub-sm c-dark">Access tier reassessment · Governance policy updates · Vendor capability review · License right-sizing</div>
+      <div class="cadence-copy">Access tier reassessment, policy updates, vendor capability review, and <strong>license right-sizing</strong>.</div>
     </div>
-    <div class="cadence-row">
+    <div class="cadence-card">
       <div class="cad-freq">Semi-Annual</div>
-      <div class="sub-sm c-dark">Regulatory compliance audit · DPIA refresh · SOP updates · Vendor contract review</div>
+      <div class="cadence-copy">Regulatory compliance audit, DPIA refresh, SOP updates, and <strong>vendor contract review</strong>.</div>
     </div>
-    <div class="cadence-row">
+    <div class="cadence-card" style="grid-column:1 / -1;">
       <div class="cad-freq">Annually</div>
-      <div class="sub-sm c-dark">Full governance framework review · EU AI Act compliance assessment · Vendor renegotiation · Agent retirement review</div>
+      <div class="cadence-copy">Full governance framework review, EU AI Act compliance assessment, vendor renegotiation, and <strong>agent retirement review</strong>.</div>
     </div>
   </div>
-  <div class="card-red" style="margin-top:20px; max-width:700px; display:flex; gap:14px; align-items:center;">
-    <div style="font-size:24px;">🔄</div>
-    <p class="sub-sm c-dark"><strong>Agentic AI governance is not a one-time decision.</strong> Both vendors ship new features at rapid cadence. The quarterly review cadence is not optional — it is the mechanism that allows controlled expansion.</p>
+  <div class="cadence-callout">
+    <div class="cadence-callout-icon">↻</div>
+    <p class="sub" style="color:var(--dark);"><strong>Governance is continuous, not one-time.</strong> Both vendors ship fast. This cadence is the control system that allows Takeda to expand access without losing oversight.</p>
   </div>
 </div>
 
@@ -938,11 +977,11 @@
     <div style="display:flex; flex-direction:column; gap:10px;">
       <div class="card-dark" style="border:1px solid rgba(225,36,42,0.4);">
         <div class="bold-sm c-red" style="margin-bottom:8px;">Takeda's Advantages</div>
-        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Digital Privacy Officer function in place</div></div>
-        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Multi-model strategy already running</div></div>
-        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">24K+ employees on myAibou chatbot</div></div>
-        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">AI training in 100+ languages</div></div>
-        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Foundation-first data governance</div></div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-white">Digital Privacy Officer function in place</div></div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-white">Multi-model strategy already running</div></div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-white">24K+ employees on myAibou chatbot</div></div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-white">AI training in 100+ languages</div></div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-white">Foundation-first data governance</div></div>
       </div>
       <div class="card-dark">
         <div class="bold-sm c-white" style="margin-bottom:8px;">Next Action</div>
