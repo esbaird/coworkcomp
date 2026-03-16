@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Desktop Agents at Takeda</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e1242a;
+    --dark: #34373f;
+    --silver: #a1a4ac;
+    --white: #ffffff;
+    --light: #f4f4f5;
+    --mid: #e8e8ea;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Montserrat',sans-serif; background:#1a1c20; color:var(--dark); overflow:hidden; height:100vh; display:flex; }
+
+  /* SIDEBAR */
+  #sidebar {
+    width:220px; min-width:220px; background:var(--dark); height:100vh; overflow-y:auto;
+    display:flex; flex-direction:column; padding:20px 0; z-index:10;
+  }
+  #sidebar .logo {
+    padding:0 18px 20px; border-bottom:1px solid rgba(255,255,255,0.1);
+    margin-bottom:16px;
+  }
+  #sidebar .logo span { color:var(--red); font-weight:800; font-size:14px; letter-spacing:2px; text-transform:uppercase; }
+  #sidebar .logo div { color:rgba(255,255,255,0.45); font-size:10px; font-weight:500; letter-spacing:1px; margin-top:2px; }
+  .ch-group { margin-bottom:4px; }
+  .ch-label {
+    padding:8px 18px; font-size:10px; font-weight:700; letter-spacing:1.5px;
+    text-transform:uppercase; color:rgba(255,255,255,0.35); cursor:pointer;
+    border-left:3px solid transparent; transition:all .2s;
+    display:block; line-height:1.4;
+  }
+  .ch-label:hover { color:rgba(255,255,255,0.7); background:rgba(255,255,255,0.04); }
+  .ch-label.active { color:var(--white); border-left-color:var(--red); background:rgba(225,36,42,0.12); }
+
+  /* MAIN */
+  #main { flex:1; position:relative; height:100vh; overflow:hidden; }
+  #slide-counter {
+    position:absolute; top:20px; right:24px; z-index:20;
+    font-size:12px; font-weight:600; color:rgba(255,255,255,0.5);
+    letter-spacing:1px;
+  }
+  .slide {
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    opacity:0; transition:opacity .35s ease;
+  }
+  .slide.active { display:flex; opacity:1; }
+
+  /* SLIDE LAYOUTS */
+  .sl-full { width:100%; height:100%; padding:60px 70px; flex-direction:column; justify-content:center; }
+  .sl-split { width:100%; height:100%; display:grid; grid-template-columns:1fr 1fr; }
+  .sl-thirds { width:100%; height:100%; padding:50px 70px; flex-direction:column; justify-content:center; }
+
+  /* THEMES */
+  .t-white { background:var(--white); }
+  .t-light { background:var(--light); }
+  .t-dark { background:var(--dark); }
+  .t-red { background:var(--red); }
+  .t-darkred { background:#1a0c0d; }
+
+  /* TYPOGRAPHY */
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin-bottom:14px; }
+  .eyebrow.red { color:var(--red); }
+  .eyebrow.silver { color:var(--silver); }
+  .eyebrow.white { color:rgba(255,255,255,0.5); }
+  h1 { font-size:52px; font-weight:800; line-height:1.1; }
+  h2 { font-size:38px; font-weight:800; line-height:1.15; }
+  h3 { font-size:28px; font-weight:700; line-height:1.2; }
+  .stat-huge { font-size:110px; font-weight:900; line-height:1; }
+  .stat-big { font-size:72px; font-weight:900; line-height:1; }
+  .stat-med { font-size:48px; font-weight:800; line-height:1; }
+  .sub { font-size:15px; font-weight:400; line-height:1.6; }
+  .sub-sm { font-size:13px; font-weight:400; line-height:1.6; }
+  .bold-sm { font-size:13px; font-weight:700; }
+
+  /* COLORS */
+  .c-red { color:var(--red); }
+  .c-dark { color:var(--dark); }
+  .c-silver { color:var(--silver); }
+  .c-white { color:var(--white); }
+  .c-dimwhite { color:rgba(255,255,255,0.65); }
+
+  /* COMPONENTS */
+  .tag {
+    display:inline-block; padding:4px 12px; border-radius:20px;
+    font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+  }
+  .tag-red { background:rgba(225,36,42,0.15); color:var(--red); }
+  .tag-dark { background:rgba(52,55,63,0.1); color:var(--dark); }
+  .tag-silver { background:rgba(161,164,172,0.2); color:#666; }
+  .tag-white { background:rgba(255,255,255,0.15); color:var(--white); }
+
+  .divider { height:3px; width:60px; background:var(--red); margin:18px 0; }
+  .divider.white { background:rgba(255,255,255,0.3); }
+  .divider.full { width:100%; height:1px; background:var(--mid); }
+
+  .card {
+    background:var(--white); border-radius:12px; padding:24px;
+    box-shadow:0 2px 20px rgba(0,0,0,0.06);
+  }
+  .card-dark {
+    background:rgba(255,255,255,0.07); border-radius:12px; padding:24px;
+    border:1px solid rgba(255,255,255,0.1);
+  }
+  .card-red { background:rgba(225,36,42,0.12); border-radius:12px; padding:24px; border:1px solid rgba(225,36,42,0.3); }
+
+  .pill-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .pill {
+    padding:8px 16px; border-radius:8px; font-size:12px; font-weight:600;
+    background:var(--light); color:var(--dark);
+  }
+  .pill.red { background:rgba(225,36,42,0.12); color:var(--red); }
+  .pill.dark { background:var(--dark); color:var(--white); }
+
+  /* SPECIFIC SLIDE STYLES */
+  .split-left { padding:60px; display:flex; flex-direction:column; justify-content:center; }
+  .split-right { display:flex; flex-direction:column; justify-content:center; align-items:center; }
+
+  .cap-item { display:flex; gap:14px; align-items:flex-start; margin-bottom:14px; }
+  .cap-dot { width:8px; height:8px; border-radius:50%; background:var(--red); margin-top:6px; flex-shrink:0; }
+  .cap-text { font-size:13px; font-weight:500; line-height:1.5; color:var(--dark); }
+
+  .risk-row { display:grid; grid-template-columns:1fr 100px 1fr; gap:8px; align-items:center; padding:10px 0; border-bottom:1px solid var(--mid); }
+  .risk-row:last-child { border-bottom:none; }
+  .risk-badge { text-align:center; padding:3px 8px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .r-mod { background:#fff3cd; color:#856404; }
+  .r-high { background:#ffe0e0; color:#b91c1c; }
+  .r-vhigh { background:#ffd0d0; color:#991b1b; }
+  .r-crit { background:var(--red); color:white; }
+
+  .phase-bar { display:flex; gap:0; margin:24px 0; }
+  .phase-block {
+    flex:1; padding:18px 16px; text-align:center;
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .phase-block:first-child { border-radius:8px 0 0 8px; }
+  .phase-block:last-child { border-radius:0 8px 8px 0; }
+  .ph1 { background:rgba(225,36,42,0.15); color:var(--red); }
+  .ph2 { background:rgba(225,36,42,0.3); color:var(--red); }
+  .ph3 { background:rgba(225,36,42,0.5); color:white; }
+  .ph4 { background:var(--red); color:white; }
+  .phase-block .ph-label { font-size:9px; opacity:0.8; margin-bottom:4px; }
+  .phase-block .ph-months { font-size:16px; font-weight:900; display:block; margin-top:4px; }
+
+  .tier-row { display:grid; grid-template-columns:80px 1fr 1fr; gap:12px; align-items:center; margin-bottom:12px; }
+  .tier-num { width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900; }
+  .t1 { background:rgba(52,55,63,0.1); color:var(--dark); }
+  .t2 { background:rgba(225,36,42,0.15); color:var(--red); }
+  .t3 { background:var(--red); color:white; }
+
+  .compare-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--mid); }
+  .compare-row > div { background:var(--white); padding:12px 16px; font-size:12px; font-weight:500; }
+  .compare-row > div:first-child { font-weight:700; font-size:11px; color:var(--silver); text-transform:uppercase; letter-spacing:0.5px; background:var(--light); }
+  .compare-header > div { background:var(--dark) !important; color:white !important; font-weight:700; font-size:12px; }
+  .compare-header > div:first-child { background:var(--dark) !important; }
+  .check { color:#16a34a; font-weight:800; }
+  .cross { color:var(--red); font-weight:800; }
+  .warn { color:#d97706; font-weight:800; }
+
+  .big-quote { font-size:17px; font-weight:600; line-height:1.6; font-style:italic; color:var(--dark); }
+  .quote-source { font-size:11px; font-weight:700; color:var(--silver); text-transform:uppercase; letter-spacing:1px; margin-top:12px; }
+
+  .nav-hint { position:fixed; bottom:20px; right:24px; font-size:11px; color:rgba(255,255,255,0.25); letter-spacing:0.5px; }
+
+  .icon-circle { width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; }
+
+  .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .four-col { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; }
+
+  .cadence-row { display:grid; grid-template-columns:120px 1fr; gap:16px; align-items:center; padding:12px 0; border-bottom:1px solid var(--mid); }
+  .cadence-row:last-child { border-bottom:none; }
+  .cad-freq { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--red); }
+
+  .bar-wrap { margin:8px 0; }
+  .bar-label { display:flex; justify-content:space-between; font-size:11px; font-weight:600; margin-bottom:4px; }
+  .bar-bg { height:8px; background:var(--mid); border-radius:4px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:4px; background:var(--red); }
+
+  .arrow-right { font-size:20px; color:var(--silver); align-self:center; text-align:center; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .slide.active > * { animation:fadeUp .4s ease forwards; }
+  .slide.active > *:nth-child(2) { animation-delay:.07s; }
+  .slide.active > *:nth-child(3) { animation-delay:.12s; }
+  .slide.active > *:nth-child(4) { animation-delay:.17s; }
+  .slide.active > *:nth-child(5) { animation-delay:.22s; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="logo"><span>Takeda</span><div>AI Governance Brief</div></div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="0">The Decision</a>
+    <a class="ch-label" data-slide="1">Context & Stakes</a>
+  </div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="2">Claude CoWork</a>
+    <a class="ch-label" data-slide="3">CoWork Capabilities</a>
+    <a class="ch-label" data-slide="4">Access & Limits</a>
+  </div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="5">Microsoft Copilot</a>
+    <a class="ch-label" data-slide="6">Copilot Pricing</a>
+    <a class="ch-label" data-slide="7">Purview Advantage</a>
+  </div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="8">Head-to-Head</a>
+    <a class="ch-label" data-slide="9">The Critical Gap</a>
+  </div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="10">Risk: Exfiltration</a>
+    <a class="ch-label" data-slide="11">Prompt Injection</a>
+    <a class="ch-label" data-slide="12">Rule of Two</a>
+  </div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="13">Regulatory Walls</a>
+    <a class="ch-label" data-slide="14">EU AI Act</a>
+    <a class="ch-label" data-slide="15">Risk by Persona</a>
+  </div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="16">8 Controls</a>
+    <a class="ch-label" data-slide="17">Three-Tier Model</a>
+  </div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="18">Cost Optimization</a>
+    <a class="ch-label" data-slide="19">License Hygiene</a>
+  </div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="20">4-Phase Plan</a>
+    <a class="ch-label" data-slide="21">Review Cadence</a>
+  </div>
+  <div class="ch-group">
+    <a class="ch-label" data-slide="22">Recommendation</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+<div id="slide-counter">1 / 23</div>
+
+<!-- ═══ SLIDE 0: The Decision ═══ -->
+<div class="slide active t-dark sl-full">
+  <div class="eyebrow white">Takeda Digital Governance</div>
+  <h1 class="c-white" style="font-size:56px;max-width:700px;">A Pivotal<br><span class="c-red">Governance</span><br>Moment</h1>
+  <div class="divider white"></div>
+  <p class="sub c-dimwhite" style="max-width:560px;">Both Anthropic and Microsoft now ship autonomous desktop AI agents executing with full user permissions. The decision to block — or enable — cannot be indefinitely deferred.</p>
+  <div class="pill-row" style="margin-top:28px;">
+    <div class="pill dark">Claude CoWork · Jan 2026</div>
+    <div class="pill dark">MS Copilot Cowork · Mar 2026</div>
+    <div class="pill red">FDA · EMA · PMDA Oversight</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 1: Context & Stakes ═══ -->
+<div class="slide t-light sl-full">
+  <div class="eyebrow red">Takeda's Position</div>
+  <div class="three-col" style="margin-top:10px;">
+    <div class="card" style="border-top:3px solid var(--red);">
+      <div class="stat-big c-red">$2B</div>
+      <div class="divider"></div>
+      <p class="bold-sm c-dark">Annual Digital Spending</p>
+      <p class="sub-sm c-silver" style="margin-top:6px;">DD&T org already multi-model: Microsoft, OpenAI, Anthropic, AWS</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--dark);">
+      <div class="stat-big c-dark">49K+</div>
+      <div class="divider"></div>
+      <p class="bold-sm c-dark">Employees</p>
+      <p class="sub-sm c-silver" style="margin-top:6px;">With potential AI access — including 24,000+ already using myAibou chatbot</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--silver);">
+      <div class="stat-big c-silver">3</div>
+      <div class="divider"></div>
+      <p class="bold-sm c-dark">Regulators</p>
+      <p class="sub-sm c-silver" style="margin-top:6px;">FDA · EMA · PMDA — simultaneous multi-jurisdictional oversight</p>
+    </div>
+  </div>
+  <div class="card-red" style="margin-top:18px; display:flex; gap:16px; align-items:center;">
+    <div style="font-size:28px;">⚠️</div>
+    <p class="sub-sm c-dark"><strong>Permanent blocking = shadow AI risk.</strong> Employees will find unmanaged alternatives. Phased enablement with governance controls is the only viable path.</p>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 2: Claude CoWork ═══ -->
+<div class="slide t-dark sl-full">
+  <div class="eyebrow white">Anthropic · Claude CoWork</div>
+  <div class="two-col" style="align-items:center; margin-top:8px;">
+    <div>
+      <div class="stat-big c-red">Jan 12</div>
+      <div style="font-size:22px; font-weight:700; color:rgba(255,255,255,0.4);">2026</div>
+      <div class="divider white" style="margin:20px 0;"></div>
+      <h3 class="c-white">Research Preview</h3>
+      <p class="sub c-dimwhite" style="margin-top:12px;">Third tab in Claude Desktop — alongside Chat and Code. Built for non-technical users to access the same agentic architecture developers use in Claude Code.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="card-dark">
+        <div class="bold-sm c-white">Desktop Only</div>
+        <div class="sub-sm c-dimwhite" style="margin-top:4px;">macOS & Windows · Not web · Not mobile</div>
+      </div>
+      <div class="card-dark">
+        <div class="bold-sm c-white">Isolated Linux VM</div>
+        <div class="sub-sm c-dimwhite" style="margin-top:4px;">Apple Virtualization Framework · Sandboxed execution</div>
+      </div>
+      <div class="card-dark">
+        <div class="bold-sm c-white">Pro / Max / Team / Enterprise</div>
+        <div class="sub-sm c-dimwhite" style="margin-top:4px;">$20/mo → $200/mo → Enterprise custom</div>
+      </div>
+      <div class="card-dark" style="border-color:rgba(225,36,42,0.4);">
+        <div class="bold-sm c-red">Sessions local · No cross-device sync</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 3: CoWork Capabilities ═══ -->
+<div class="slide t-light sl-full">
+  <div class="eyebrow red">What CoWork Can Do</div>
+  <div class="three-col" style="margin-top:12px;">
+    <div>
+      <div style="font-size:32px; margin-bottom:10px;">📁</div>
+      <div class="bold-sm" style="margin-bottom:8px;">File Operations</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Read, edit, create, delete in granted folders</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Generate Excel, PowerPoint, formatted reports</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Statistical analysis & data visualization</div></div>
+    </div>
+    <div>
+      <div style="font-size:32px; margin-bottom:10px;">🌐</div>
+      <div class="bold-sm" style="margin-bottom:8px;">Browser Automation</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Navigate websites via Claude in Chrome</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Click buttons, fill forms, extract data</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Schedule recurring tasks via /schedule</div></div>
+    </div>
+    <div>
+      <div style="font-size:32px; margin-bottom:10px;">🧩</div>
+      <div class="bold-sm" style="margin-bottom:8px;">Plugin System</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">11 open-source starter plugins</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Sales, legal, data analysis roles</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text">Enterprise admin controls availability</div></div>
+    </div>
+  </div>
+  <div class="divider full" style="margin:20px 0;"></div>
+  <div style="display:flex; gap:12px; align-items:center;">
+    <div class="tag tag-dark">Natural language input</div>
+    <div style="color:var(--silver);">→</div>
+    <div class="tag tag-dark">Multi-step plan</div>
+    <div style="color:var(--silver);">→</div>
+    <div class="tag tag-dark">Parallel subtasks</div>
+    <div style="color:var(--silver);">→</div>
+    <div class="tag tag-dark">VM execution</div>
+    <div style="color:var(--silver);">→</div>
+    <div class="tag tag-red">Delivered to filesystem</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 4: Access & Limits ═══ -->
+<div class="slide t-dark sl-full">
+  <div class="eyebrow white">The Hard Constraint</div>
+  <div style="max-width:700px; margin:20px 0 30px;">
+    <div class="big-quote c-white">"Cowork activity is not captured in audit logs, Compliance API, or data exports.</div>
+    <div class="stat-med c-red" style="margin-top:20px; font-size:32px; line-height:1.4; font-style:italic;">Do not use Cowork<br>for regulated workloads."</div>
+    <div class="quote-source">— Anthropic Official Documentation</div>
+  </div>
+  <div class="divider white"></div>
+  <div class="two-col" style="max-width:680px;">
+    <div class="card-dark">
+      <div class="bold-sm c-white" style="margin-bottom:8px;">✅ Allowed</div>
+      <div class="sub-sm c-dimwhite">Research · Drafting · Analysis<br>General productivity tasks</div>
+    </div>
+    <div class="card-red">
+      <div class="bold-sm c-red" style="margin-bottom:8px;">❌ Blocked</div>
+      <div class="sub-sm c-dimwhite">GxP records · Clinical operations<br>Regulatory submissions · Part 11</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 5: Microsoft Copilot ═══ -->
+<div class="slide t-light sl-full">
+  <div class="eyebrow red">Microsoft Copilot Agentic Suite</div>
+  <p class="sub c-silver" style="margin-bottom:20px;">Not one feature — five interconnected product surfaces</p>
+  <div style="display:flex; flex-direction:column; gap:10px;">
+    <div class="card" style="display:grid; grid-template-columns:220px 1fr 100px; gap:16px; align-items:center;">
+      <div><span class="tag tag-red">GA Mar 31, 2025</span><div class="bold-sm" style="margin-top:6px;">Copilot Studio Autonomous Agents</div></div>
+      <div class="sub-sm c-silver">Perceive events · Decide · Execute independently. Powered by Claude Sonnet 4.5 + OpenAI CUA for computer use.</div>
+      <div class="tag tag-dark" style="text-align:center;">Most mature</div>
+    </div>
+    <div class="card" style="display:grid; grid-template-columns:220px 1fr 100px; gap:16px; align-items:center;">
+      <div><span class="tag tag-silver">Preview Mar 9, 2026</span><div class="bold-sm" style="margin-top:6px;">Copilot Cowork</div></div>
+      <div class="sub-sm c-silver">Multi-step execution across Outlook, Teams, Excel, Word, PowerPoint with progress checkpoints.</div>
+      <div class="tag tag-dark" style="text-align:center;">Closest rival</div>
+    </div>
+    <div class="card" style="display:grid; grid-template-columns:220px 1fr 100px; gap:16px; align-items:center;">
+      <div><span class="tag tag-silver">Preview</span><div class="bold-sm" style="margin-top:6px;">Copilot Actions</div></div>
+      <div class="sub-sm c-silver">Automate recurring tasks: summaries, meeting prep, newsletters via Power Platform connectors.</div>
+      <div class="tag tag-dark" style="text-align:center;">Scheduling</div>
+    </div>
+    <div class="card" style="display:grid; grid-template-columns:220px 1fr 100px; gap:16px; align-items:center;">
+      <div><span class="tag tag-silver">Insider Preview</span><div class="bold-sm" style="margin-top:6px;">Windows Copilot Actions</div></div>
+      <div class="sub-sm c-silver">Local file tasks via Agent Workspace — contained, policy-controlled, auditable environment.</div>
+      <div class="tag tag-dark" style="text-align:center;">Local files</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 6: Copilot Pricing ═══ -->
+<div class="slide t-dark sl-full">
+  <div class="eyebrow white">Microsoft Pricing Landscape</div>
+  <div class="three-col" style="margin-top:16px;">
+    <div class="card-dark">
+      <div class="stat-med c-red">$30</div>
+      <div class="sub-sm c-dimwhite" style="margin-top:4px;">per user / month</div>
+      <div class="divider white"></div>
+      <div class="bold-sm c-white">M365 Copilot Add-on</div>
+      <div class="sub-sm c-dimwhite" style="margin-top:6px;">Requires E3, E5, Business Standard or Premium base</div>
+    </div>
+    <div class="card-dark">
+      <div class="stat-med c-red">$0.01</div>
+      <div class="sub-sm c-dimwhite" style="margin-top:4px;">per Copilot Credit</div>
+      <div class="divider white"></div>
+      <div class="bold-sm c-white">Copilot Studio</div>
+      <div class="sub-sm c-dimwhite" style="margin-top:6px;">25 credits/trigger · 5 credits/computer use step · $200/mo = 25K credits</div>
+    </div>
+    <div class="card-dark">
+      <div class="stat-med c-red">$99</div>
+      <div class="sub-sm c-dimwhite" style="margin-top:4px;">per user / month · May 2026</div>
+      <div class="divider white"></div>
+      <div class="bold-sm c-white">M365 E7 Frontier Suite</div>
+      <div class="sub-sm c-dimwhite" style="margin-top:6px;">E5 + Copilot + Agent 365 + full security stack</div>
+    </div>
+  </div>
+  <div class="card-red" style="margin-top:18px; display:flex; gap:16px; align-items:center;">
+    <div style="font-size:24px;">🗓️</div>
+    <p class="sub-sm" style="color:var(--dark);"><strong>Price increase effective July 1, 2026.</strong> Lock in current M365 pricing before this date — up to 20% savings with annual Copilot Credit Commit Units.</p>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 7: Purview Advantage ═══ -->
+<div class="slide t-light sl-full">
+  <div class="eyebrow red">Microsoft's Enterprise Security Moat</div>
+  <div class="two-col" style="margin-top:16px; align-items:start;">
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="card" style="border-left:4px solid var(--red);">
+        <div class="bold-sm">Microsoft Purview</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">DLP · 315+ out-of-box classifiers · eDiscovery · Legal hold · Insider risk alerts · Full audit trail</div>
+      </div>
+      <div class="card" style="border-left:4px solid var(--dark);">
+        <div class="bold-sm">Entra Agent ID</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Agents get their own identity · Conditional access · Anomaly detection · Full lifecycle management</div>
+      </div>
+      <div class="card" style="border-left:4px solid var(--silver);">
+        <div class="bold-sm">Agent 365</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Unified control plane $15/user/mo · Centralized policy, governance, monitoring across ALL agents · GA May 2026</div>
+      </div>
+    </div>
+    <div class="card" style="background:var(--dark); color:white; height:100%;">
+      <div class="eyebrow white" style="margin-bottom:16px;">Governance Stack</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="background:rgba(225,36,42,0.3); padding:8px 12px; border-radius:6px; font-size:12px; font-weight:600; color:white;">Purview DLP + 315 classifiers</div>
+        <div style="background:rgba(225,36,42,0.25); padding:8px 12px; border-radius:6px; font-size:12px; font-weight:600; color:white;">Entra Agent ID + Conditional Access</div>
+        <div style="background:rgba(225,36,42,0.2); padding:8px 12px; border-radius:6px; font-size:12px; font-weight:600; color:white;">Defender for Cloud Apps monitoring</div>
+        <div style="background:rgba(225,36,42,0.15); padding:8px 12px; border-radius:6px; font-size:12px; font-weight:600; color:white;">Agent 365 Unified Control Plane</div>
+        <div style="background:rgba(225,36,42,0.1); padding:8px 12px; border-radius:6px; font-size:12px; font-weight:600; color:white;">Intune + Entra Group Assignment</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 8: Head-to-Head ═══ -->
+<div class="slide t-light sl-full" style="padding:40px 70px;">
+  <div class="eyebrow red" style="margin-bottom:14px;">Head-to-Head Comparison</div>
+  <div style="border-radius:10px; overflow:hidden; border:1px solid var(--mid);">
+    <div class="compare-row compare-header">
+      <div>Dimension</div><div style="text-align:center;">Claude CoWork</div><div style="text-align:center;">MS Copilot Cowork</div>
+    </div>
+    <div class="compare-row"><div>Launch status</div><div>Research preview · Jan 12</div><div>Research preview · Mar 9</div></div>
+    <div class="compare-row"><div>Execution env</div><div>Isolated Linux VM (local)</div><div>Cloud sandbox (Windows 365)</div></div>
+    <div class="compare-row"><div>Data access</div><div>User-granted local folders + browser</div><div>Microsoft Graph natively (email, calendar, Teams, SharePoint)</div></div>
+    <div class="compare-row"><div>Audit trail</div><div><span class="cross">✗ Not captured — explicitly excluded</span></div><div><span class="check">✓ Full via Purview + eDiscovery</span></div></div>
+    <div class="compare-row"><div>Agent identity</div><div><span class="cross">✗ No separate agent identity</span></div><div><span class="check">✓ Entra Agent ID (preview)</span></div></div>
+    <div class="compare-row"><div>DLP enforcement</div><div><span class="warn">⚠ Network-level controls only</span></div><div><span class="check">✓ 315+ Purview classifiers</span></div></div>
+    <div class="compare-row"><div>GxP / Part 11 ready</div><div><span class="cross">✗ Non-compliant (no audit log)</span></div><div><span class="warn">⚠ Infrastructure ✓ — workflows need validation</span></div></div>
+    <div class="compare-row"><div>Regulated workloads</div><div><span class="cross">✗ Explicitly warned against</span></div><div><span class="check">✓ With proper Purview config</span></div></div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 9: The Critical Gap ═══ -->
+<div class="slide t-red sl-full">
+  <div class="eyebrow white">The Single Blocking Issue</div>
+  <h2 class="c-white" style="font-size:48px; max-width:600px; margin:16px 0;">No Audit Log =<br>No Part 11<br>Compliance</h2>
+  <div class="divider white"></div>
+  <p class="sub c-white" style="max-width:580px; opacity:0.85;">21 CFR Part 11 §11.10(e) requires complete audit trails for all electronic records. CoWork's local-VM architecture explicitly excludes activity from Anthropic's audit infrastructure. This is a hard regulatory blocker — not a configuration gap.</p>
+  <div style="margin-top:28px; background:rgba(0,0,0,0.2); border-radius:10px; padding:18px 24px; display:inline-block;">
+    <div class="bold-sm c-white" style="margin-bottom:4px;">Until Anthropic ships audit log integration:</div>
+    <div class="sub c-white" style="opacity:0.9;">CoWork = Tier 1 only · Never Tier 3</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 10: Risk: Exfiltration ═══ -->
+<div class="slide t-dark sl-full">
+  <div class="eyebrow white">Security Risk — Real & Demonstrated</div>
+  <div class="two-col" style="margin-top:10px; align-items:center;">
+    <div>
+      <div class="stat-huge c-red">48h</div>
+      <div class="divider white"></div>
+      <h3 class="c-white">After launch,<br>files were exfiltrated</h3>
+      <p class="sub c-dimwhite" style="margin-top:14px;">PromptArmor demonstrated a live file exfiltration attack exploiting the Anthropic API allowlist inside CoWork's VM. A prompt-injected document triggered data uploads to an attacker's Anthropic account.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="card-dark">
+        <div class="bold-sm c-white">How it worked</div>
+        <div class="sub-sm c-dimwhite" style="margin-top:6px;">Malicious document → prompt injection → Anthropic API allowlisted in VM → data upload to attacker account</div>
+      </div>
+      <div class="card-dark">
+        <div class="bold-sm c-white">Prior warning ignored</div>
+        <div class="sub-sm c-dimwhite" style="margin-top:6px;">Same vulnerability reported for Claude Code in Oct 2025 — initially closed as "out of scope" on HackerOne</div>
+      </div>
+      <div class="card-red">
+        <div class="bold-sm" style="color:var(--red);">Not theoretical. Not a lab test.</div>
+        <div class="sub-sm c-dimwhite" style="margin-top:6px;">Real attack. Real data. Real timeline.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 11: Prompt Injection ═══ -->
+<div class="slide t-light sl-full">
+  <div class="eyebrow red">The Industry's Unsolved Problem</div>
+  <div class="three-col" style="margin-top:16px;">
+    <div class="card" style="border-top:4px solid var(--red); text-align:center;">
+      <div class="stat-big c-red">#1</div>
+      <div class="divider" style="margin:12px auto;"></div>
+      <div class="bold-sm">OWASP Top 10</div>
+      <div class="sub-sm c-silver" style="margin-top:6px;">Prompt injection ranked #1 risk in LLM Applications 2025</div>
+    </div>
+    <div class="card" style="border-top:4px solid var(--dark); text-align:center;">
+      <div class="stat-big c-dark">73%</div>
+      <div class="divider" style="margin:12px auto;"></div>
+      <div class="bold-sm">Production Deployments</div>
+      <div class="sub-sm c-silver" style="margin-top:6px;">Affected by prompt injection in OWASP 2025 assessments</div>
+    </div>
+    <div class="card" style="border-top:4px solid var(--silver); text-align:center;">
+      <div class="stat-big" style="color:#d97706;">92%</div>
+      <div class="divider" style="margin:12px auto;"></div>
+      <div class="bold-sm">Multi-Turn Attack Rate</div>
+      <div class="sub-sm c-silver" style="margin-top:6px;">Success rate in controlled testing environments</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px; border-left:4px solid var(--red); display:flex; gap:16px; align-items:center;">
+    <div>
+      <div class="bold-sm">Anthropic's own admission:</div>
+      <div class="sub-sm c-silver" style="margin-top:4px;">Classifier defenses achieve ~1% attack success with best-of-N attackers. Persistent adversaries breach defenses <strong>more than half the time</strong> with repeated attempts (Opus 4.6 system card).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 12: Rule of Two ═══ -->
+<div class="slide t-dark sl-full">
+  <div class="eyebrow white">Meta's Rule of Two Framework</div>
+  <p class="sub c-dimwhite" style="margin-bottom:24px; max-width:600px;">Until prompt injection is reliably solvable, agents must satisfy no more than <strong style="color:white;">two of three</strong> properties simultaneously:</p>
+  <div class="three-col">
+    <div class="card-dark" style="text-align:center; padding:30px 20px;">
+      <div style="font-size:42px; margin-bottom:12px;">🔓</div>
+      <div class="bold-sm c-white">Access to<br>Untrusted Data</div>
+      <div class="sub-sm c-dimwhite" style="margin-top:8px;">Web, email, documents from outside the org</div>
+    </div>
+    <div class="card-dark" style="text-align:center; padding:30px 20px;">
+      <div style="font-size:42px; margin-bottom:12px;">🔐</div>
+      <div class="bold-sm c-white">Access to<br>Sensitive Data</div>
+      <div class="sub-sm c-dimwhite" style="margin-top:8px;">Patient data, credentials, regulated records</div>
+    </div>
+    <div class="card-dark" style="text-align:center; padding:30px 20px;">
+      <div style="font-size:42px; margin-bottom:12px;">⚡</div>
+      <div class="bold-sm c-white">Consequential<br>Actions</div>
+      <div class="sub-sm c-dimwhite" style="margin-top:8px;">Send emails, modify records, trigger workflows</div>
+    </div>
+  </div>
+  <div class="card-red" style="margin-top:18px;">
+    <div class="bold-sm" style="color:var(--red);">Pharma Problem: All three are routinely required.</div>
+    <div class="sub-sm c-dimwhite" style="margin-top:6px;">This framework is the governance constraint that shapes Takeda's entire tiered access model.</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 13: Regulatory Walls ═══ -->
+<div class="slide t-light sl-full">
+  <div class="eyebrow red">Three Regulatory Hard Stops</div>
+  <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
+    <div class="card" style="display:grid; grid-template-columns:180px 1fr; gap:20px; border-left:4px solid var(--red);">
+      <div>
+        <div class="bold-sm c-red">GxP Compliance</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Accuracy · Traceability · Reproducibility</div>
+      </div>
+      <div class="sub-sm c-silver">AI agents touching regulated systems become <strong>computerized system components</strong> requiring validation. LLMs are probabilistic and adaptive — traditional deterministic validation frameworks don't apply.</div>
+    </div>
+    <div class="card" style="display:grid; grid-template-columns:180px 1fr; gap:20px; border-left:4px solid var(--dark);">
+      <div>
+        <div class="bold-sm c-dark">21 CFR Part 11</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">§11.10(a)(d)(e)(g)</div>
+      </div>
+      <div class="sub-sm c-silver">AI-generated/modified electronic records must have: validation · complete audit trails · authority checks · <strong>unique identification of AI operations</strong> (not generic admin accounts). CoWork = non-compliant today.</div>
+    </div>
+    <div class="card" style="display:grid; grid-template-columns:180px 1fr; gap:20px; border-left:4px solid var(--silver);">
+      <div>
+        <div class="bold-sm" style="color:#888;">GDPR Art. 9</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Purpose Limitation Risk</div>
+      </div>
+      <div class="sub-sm c-silver">Agent scheduling a meeting might encounter an attached medical document → creates health-data labels → triggers special-category data rules without consent. EDPS specifically warned about this autonomous data repurposing risk.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 14: EU AI Act ═══ -->
+<div class="slide t-red sl-full">
+  <div class="eyebrow white">EU AI Act · Fully Applicable August 2026</div>
+  <div class="two-col" style="margin-top:16px; align-items:center;">
+    <div>
+      <div class="stat-big c-white">€35M</div>
+      <div class="sub c-white" style="opacity:0.75; margin-top:4px;">or 7% of global revenue</div>
+      <div class="divider white"></div>
+      <p class="sub c-white" style="opacity:0.85; max-width:380px;">Maximum penalty for non-compliant high-risk AI systems in pharmaceutical operations</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="background:rgba(0,0,0,0.2); padding:14px 18px; border-radius:8px;">
+        <div class="bold-sm c-white" style="margin-bottom:6px;">High-Risk Categories at Takeda:</div>
+        <div class="cap-item"><div class="cap-dot" style="background:white;"></div><div class="cap-text c-white" style="opacity:0.85;">Safety component of medical devices</div></div>
+        <div class="cap-item"><div class="cap-dot" style="background:white;"></div><div class="cap-text c-white" style="opacity:0.85;">Clinical decision support</div></div>
+        <div class="cap-item"><div class="cap-dot" style="background:white;"></div><div class="cap-text c-white" style="opacity:0.85;">Quality control in manufacturing</div></div>
+        <div class="cap-item"><div class="cap-dot" style="background:white;"></div><div class="cap-text c-white" style="opacity:0.85;">Pharmacovigilance</div></div>
+      </div>
+      <div style="background:rgba(0,0,0,0.2); padding:14px 18px; border-radius:8px;">
+        <div class="bold-sm c-white" style="margin-bottom:4px;">Required:</div>
+        <div class="sub-sm c-white" style="opacity:0.8;">Risk management · Data governance plans · Technical documentation · Human oversight · Conformity assessment</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 15: Risk by Persona ═══ -->
+<div class="slide t-light sl-full" style="padding:40px 70px;">
+  <div class="eyebrow red" style="margin-bottom:14px;">Risk Varies Dramatically by Role</div>
+  <div style="border-radius:10px; overflow:hidden; border:1px solid var(--mid);">
+    <div class="compare-row compare-header">
+      <div>Persona</div><div style="text-align:center;">Risk Level</div><div>Primary Concern</div>
+    </div>
+    <div class="compare-row"><div>IT / Developers</div><div style="text-align:center;"><span class="risk-badge r-mod">Moderate</span></div><div class="sub-sm">Credential exposure · Over-trust in capabilities</div></div>
+    <div class="compare-row"><div>HR / Finance</div><div style="text-align:center;"><span class="risk-badge r-mod">Mod-High</span></div><div class="sub-sm">PII · SOX compliance · GDPR Art. 22 automated decisions</div></div>
+    <div class="compare-row"><div>Medical Affairs</div><div style="text-align:center;"><span class="risk-badge r-high">High</span></div><div class="sub-sm">Off-label content risk · Communications without MLR review</div></div>
+    <div class="compare-row"><div>Clinical Operations</div><div style="text-align:center;"><span class="risk-badge r-high">High</span></div><div class="sub-sm">Patient data access · Clinical trial record integrity</div></div>
+    <div class="compare-row"><div>Regulatory Affairs</div><div style="text-align:center;"><span class="risk-badge r-vhigh">Very High</span></div><div class="sub-sm">AI-generated submission content = same validation rigor as human-drafted</div></div>
+    <div class="compare-row"><div>Pharmacovigilance</div><div style="text-align:center;"><span class="risk-badge r-crit">Critical</span></div><div class="sub-sm">Adverse event misclassification = direct patient safety impact</div></div>
+    <div class="compare-row"><div>Manufacturing / Quality</div><div style="text-align:center;"><span class="risk-badge r-crit">Critical</span></div><div class="sub-sm">GMP records · Batch documentation · Part 11 compliance</div></div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 16: 8 Controls ═══ -->
+<div class="slide t-dark sl-full" style="padding:40px 70px;">
+  <div class="eyebrow white" style="margin-bottom:14px;">8 Essential Controls Before Enablement</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+    <div class="card-dark" style="display:flex; gap:12px; align-items:flex-start;">
+      <div style="background:var(--red); color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">1</div>
+      <div><div class="bold-sm c-white">AI System Classification</div><div class="sub-sm c-dimwhite" style="margin-top:3px;">GxP impact · Data sensitivity · EU AI Act risk category</div></div>
+    </div>
+    <div class="card-dark" style="display:flex; gap:12px; align-items:flex-start;">
+      <div style="background:var(--red); color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">2</div>
+      <div><div class="bold-sm c-white">DPIA — Required by GDPR</div><div class="sub-sm c-dimwhite" style="margin-top:3px;">Map all data the agent can access, process, and transmit</div></div>
+    </div>
+    <div class="card-dark" style="display:flex; gap:12px; align-items:flex-start;">
+      <div style="background:var(--red); color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">3</div>
+      <div><div class="bold-sm c-white">Audit Trail Architecture</div><div class="sub-sm c-dimwhite" style="margin-top:3px;">Compensating controls for CoWork · Purview native for MS</div></div>
+    </div>
+    <div class="card-dark" style="display:flex; gap:12px; align-items:flex-start;">
+      <div style="background:var(--red); color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">4</div>
+      <div><div class="bold-sm c-white">Least-Privilege Enforcement</div><div class="sub-sm c-dimwhite" style="margin-top:3px;">Folder-level grants · Entra conditional access · Meta Rule of Two</div></div>
+    </div>
+    <div class="card-dark" style="display:flex; gap:12px; align-items:flex-start;">
+      <div style="background:var(--red); color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">5</div>
+      <div><div class="bold-sm c-white">Network Egress Controls</div><div class="sub-sm c-dimwhite" style="margin-top:3px;">Block unauthorized connections · Restrict VM allowlist</div></div>
+    </div>
+    <div class="card-dark" style="display:flex; gap:12px; align-items:flex-start;">
+      <div style="background:var(--red); color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">6</div>
+      <div><div class="bold-sm c-white">Human-in-the-Loop Required</div><div class="sub-sm c-dimwhite" style="margin-top:3px;">Mandatory approval for regulated records · financial txns · patient data</div></div>
+    </div>
+    <div class="card-dark" style="display:flex; gap:12px; align-items:flex-start;">
+      <div style="background:var(--red); color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">7</div>
+      <div><div class="bold-sm c-white">Prompt Injection Defenses</div><div class="sub-sm c-dimwhite" style="margin-top:3px;">Input validation · Separate LLM content checks · Chrome allowlist</div></div>
+    </div>
+    <div class="card-dark" style="display:flex; gap:12px; align-items:flex-start; border:1px solid rgba(225,36,42,0.5);">
+      <div style="background:var(--red); color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">8</div>
+      <div><div class="bold-sm c-red">Kill Switch Capability</div><div class="sub-sm c-dimwhite" style="margin-top:3px;">Org-level disable toggle (Claude) · Agent 365 + Intune (MS)</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 17: Three-Tier Model ═══ -->
+<div class="slide t-light sl-full">
+  <div class="eyebrow red">Three-Tier Access Model</div>
+  <div style="display:flex; flex-direction:column; gap:14px; margin-top:16px;">
+    <div class="card" style="display:grid; grid-template-columns:80px 1fr 1fr; gap:16px; align-items:center; border-left:4px solid #888;">
+      <div class="tier-num t1" style="margin:auto;">1</div>
+      <div>
+        <div class="bold-sm">General Productivity · Low Risk</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Drafting · Meeting summaries · Research</div>
+        <div class="tag tag-dark" style="margin-top:8px; font-size:10px;">AI Acceptable Use Cert required</div>
+      </div>
+      <div class="sub-sm c-silver"><strong class="c-dark">Both tools available</strong><br>Restricted to non-GxP, non-patient-data</div>
+    </div>
+    <div class="card" style="display:grid; grid-template-columns:80px 1fr 1fr; gap:16px; align-items:center; border-left:4px solid var(--red);">
+      <div class="tier-num t2" style="margin:auto;">2</div>
+      <div>
+        <div class="bold-sm">Business-Sensitive · Medium Risk</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Finance · Competitive intel · HR · Supply chain</div>
+        <div class="tag tag-red" style="margin-top:8px; font-size:10px;">Dept-head approval + monthly review</div>
+      </div>
+      <div class="sub-sm c-silver"><strong class="c-dark">Phase 3 rollout</strong><br>Role-specific data classification training</div>
+    </div>
+    <div class="card" style="display:grid; grid-template-columns:80px 1fr 1fr; gap:16px; align-items:center; border-left:4px solid var(--dark);">
+      <div class="tier-num t3" style="margin:auto;">3</div>
+      <div>
+        <div class="bold-sm">Regulated Workloads · High Risk</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Clinical · Pharmacovigilance · Regulatory · Manufacturing</div>
+        <div class="tag tag-dark" style="margin-top:8px; font-size:10px;">Validated AI qualification + QA sign-off</div>
+      </div>
+      <div class="sub-sm c-silver"><strong class="c-red">Microsoft Copilot only</strong><br>CoWork blocked until Anthropic adds audit logs</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 18: Cost Optimization ═══ -->
+<div class="slide t-dark sl-full">
+  <div class="eyebrow white">Cost Landscape</div>
+  <div class="two-col" style="margin-top:14px; align-items:start;">
+    <div>
+      <div class="bold-sm c-white" style="margin-bottom:12px;">Anthropic Claude</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div class="card-dark"><div class="bar-wrap"><div class="bar-label"><span class="c-white">Sonnet 4.5</span><span class="c-dimwhite">$3 / $15 per M tokens</span></div><div class="bar-bg"><div class="bar-fill" style="width:40%;"></div></div></div></div>
+        <div class="card-dark"><div class="bar-wrap"><div class="bar-label"><span class="c-white">Opus 4.5</span><span class="c-dimwhite">$5 / $25 per M tokens</span></div><div class="bar-bg"><div class="bar-fill" style="width:65%;"></div></div></div></div>
+        <div class="card-dark"><div class="bar-wrap"><div class="bar-label"><span class="c-white">Haiku 4.5</span><span class="c-dimwhite">$1 / $5 per M tokens</span></div><div class="bar-bg"><div class="bar-fill" style="width:15%;"></div></div></div></div>
+      </div>
+      <div class="card-red" style="margin-top:12px;">
+        <div class="bold-sm" style="color:var(--red);">Prompt Caching</div>
+        <div class="sub-sm c-dimwhite" style="margin-top:4px;">90% savings on repeated context</div>
+      </div>
+    </div>
+    <div>
+      <div class="bold-sm c-white" style="margin-bottom:12px;">Microsoft M365 Copilot</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div class="card-dark"><div class="bold-sm c-white">$30/user/mo</div><div class="sub-sm c-dimwhite">M365 Copilot add-on</div></div>
+        <div class="card-dark"><div class="bold-sm c-white">$0.01/credit</div><div class="sub-sm c-dimwhite">25 credits/agent trigger · 5/computer use step</div></div>
+        <div class="card-dark"><div class="bold-sm c-white">$200/mo = 25K credits</div><div class="sub-sm c-dimwhite">Prepaid capacity packs</div></div>
+      </div>
+      <div class="card-red" style="margin-top:12px;">
+        <div class="bold-sm" style="color:var(--red);">Batch API</div>
+        <div class="sub-sm c-dimwhite" style="margin-top:4px;">50% discount for async workloads</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 19: License Hygiene ═══ -->
+<div class="slide t-light sl-full">
+  <div class="eyebrow red">License Reclamation — Real Savings</div>
+  <div class="two-col" style="margin-top:16px; align-items:start;">
+    <div>
+      <div class="stat-big c-red">$1.2M</div>
+      <div class="divider"></div>
+      <p class="bold-sm">Saved by deprovisioning</p>
+      <p class="sub c-silver" style="margin-top:6px;">932 underutilized licenses recovered via CloudEagle.ai automated harvesting in a published case study</p>
+      <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+        <div class="card" style="display:flex; gap:12px; align-items:center; border-left:3px solid var(--red);">
+          <div style="font-size:22px;">⏱️</div>
+          <div><div class="bold-sm">60 Days inactive</div><div class="sub-sm c-silver">Warn user</div></div>
+        </div>
+        <div class="card" style="display:flex; gap:12px; align-items:center; border-left:3px solid var(--dark);">
+          <div style="font-size:22px;">🔄</div>
+          <div><div class="bold-sm">90 Days inactive</div><div class="sub-sm c-silver">Reclaim license automatically</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="bold-sm" style="margin-bottom:4px;">Showback → Chargeback Timeline</div>
+      <div class="card" style="border-left:3px solid rgba(225,36,42,0.3);">
+        <div class="tag tag-silver" style="margin-bottom:8px;">Months 0–6</div>
+        <div class="bold-sm">Showback</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Visibility-only cost reporting. Educate departments. Validate attribution accuracy.</div>
+      </div>
+      <div class="card" style="border-left:3px solid rgba(225,36,42,0.6);">
+        <div class="tag tag-red" style="margin-bottom:8px;">Months 6–12</div>
+        <div class="bold-sm">Hybrid Chargeback</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Charge measurable consumption (API tokens, credits). Showback for shared services.</div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--red);">
+        <div class="tag tag-dark" style="margin-bottom:8px;">Month 12+</div>
+        <div class="bold-sm">Full Chargeback</div>
+        <div class="sub-sm c-silver" style="margin-top:4px;">Automated invoicing integrated into Takeda ERP/GL systems.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 20: 4-Phase Plan ═══ -->
+<div class="slide t-dark sl-full">
+  <div class="eyebrow white">Four-Phase Implementation</div>
+  <div class="phase-bar" style="margin:20px 0 24px;">
+    <div class="phase-block ph1"><div class="ph-label">Phase 1</div><div class="bold-sm c-red">Assessment</div><span class="ph-months">0–3 mo</span></div>
+    <div class="phase-block ph2"><div class="ph-label">Phase 2</div><div class="bold-sm" style="color:var(--red);">Pilot</div><span class="ph-months">3–6 mo</span></div>
+    <div class="phase-block ph3"><div class="ph-label">Phase 3</div><div class="bold-sm c-white">Rollout</div><span class="ph-months">6–12 mo</span></div>
+    <div class="phase-block ph4"><div class="ph-label">Phase 4</div><div class="bold-sm c-white">Optimize</div><span class="ph-months">12+ mo</span></div>
+  </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px;">
+    <div class="card-dark">
+      <div class="bold-sm c-red" style="margin-bottom:8px;">Phase 1</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Data landscape audit</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Use case portfolio</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Part 11 gap assessment</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">AI governance committee</div></div>
+    </div>
+    <div class="card-dark">
+      <div class="bold-sm c-white" style="margin-bottom:8px;">Phase 2</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">50–200 users, 3–5 depts</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">20–50 Claude seats</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">15%+ budget on training</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Tier 1 use cases only</div></div>
+    </div>
+    <div class="card-dark">
+      <div class="bold-sm c-white" style="margin-bottom:8px;">Phase 3</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Expand high-ROI depts</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Pharma-specific agents</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Tier 2 with approval</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Hybrid chargeback</div></div>
+    </div>
+    <div class="card-dark">
+      <div class="bold-sm c-white" style="margin-bottom:8px;">Phase 4</div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Quarterly right-sizing</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Model routing A/B tests</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Full ERP chargeback</div></div>
+      <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">EU AI Act review</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 21: Review Cadence ═══ -->
+<div class="slide t-light sl-full">
+  <div class="eyebrow red">Governance Review Cadence</div>
+  <div style="max-width:700px; margin-top:16px;">
+    <div class="cadence-row">
+      <div class="cad-freq">Weekly</div>
+      <div class="sub-sm c-dark">Usage monitoring · Anomaly detection · Champion check-ins</div>
+    </div>
+    <div class="cadence-row">
+      <div class="cad-freq">Monthly</div>
+      <div class="sub-sm c-dark">License utilization review · Cost showback/chargeback · Security incident review</div>
+    </div>
+    <div class="cadence-row">
+      <div class="cad-freq">Quarterly</div>
+      <div class="sub-sm c-dark">Access tier reassessment · Governance policy updates · Vendor capability review · License right-sizing</div>
+    </div>
+    <div class="cadence-row">
+      <div class="cad-freq">Semi-Annual</div>
+      <div class="sub-sm c-dark">Regulatory compliance audit · DPIA refresh · SOP updates · Vendor contract review</div>
+    </div>
+    <div class="cadence-row">
+      <div class="cad-freq">Annually</div>
+      <div class="sub-sm c-dark">Full governance framework review · EU AI Act compliance assessment · Vendor renegotiation · Agent retirement review</div>
+    </div>
+  </div>
+  <div class="card-red" style="margin-top:20px; max-width:700px; display:flex; gap:14px; align-items:center;">
+    <div style="font-size:24px;">🔄</div>
+    <p class="sub-sm c-dark"><strong>Agentic AI governance is not a one-time decision.</strong> Both vendors ship new features at rapid cadence. The quarterly review cadence is not optional — it is the mechanism that allows controlled expansion.</p>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 22: Recommendation ═══ -->
+<div class="slide t-dark sl-full">
+  <div class="eyebrow white">The Bottom Line</div>
+  <div class="two-col" style="margin-top:16px; align-items:start;">
+    <div>
+      <div class="tag tag-white" style="margin-bottom:12px;">Complementary, Not Competing</div>
+      <h3 class="c-white" style="font-size:26px; margin-bottom:16px; line-height:1.4;">Start Tier 1 in<br><span class="c-red">3–6 months.</span><br>Build toward Tier 3.</h3>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div style="width:12px; height:12px; border-radius:50%; background:var(--red); flex-shrink:0;"></div>
+          <div class="sub-sm c-dimwhite"><strong class="c-white">Microsoft Copilot</strong> — Broader deployment, including regulated workloads with Purview confirmed active</div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div style="width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.4); flex-shrink:0;"></div>
+          <div class="sub-sm c-dimwhite"><strong class="c-white">Claude CoWork</strong> — Research, analysis, productivity. Tier 1 only until Anthropic ships audit logs.</div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div style="width:12px; height:12px; border-radius:50%; background:rgba(225,36,42,0.5); flex-shrink:0;"></div>
+          <div class="sub-sm c-dimwhite"><strong class="c-white">Shadow AI risk</strong> — Permanent blocking creates the problem it tries to prevent</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="card-dark" style="border:1px solid rgba(225,36,42,0.4);">
+        <div class="bold-sm c-red" style="margin-bottom:8px;">Takeda's Advantages</div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Digital Privacy Officer function in place</div></div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Multi-model strategy already running</div></div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">24K+ employees on myAibou chatbot</div></div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">AI training in 100+ languages</div></div>
+        <div class="cap-item"><div class="cap-dot"></div><div class="cap-text c-dimwhite">Foundation-first data governance</div></div>
+      </div>
+      <div class="card-dark">
+        <div class="bold-sm c-white" style="margin-bottom:8px;">Next Action</div>
+        <div class="sub-sm c-dimwhite">Form governance committee → Run Part 11 gap assessment → Launch Tier 1 pilot with 50–200 users in Q2 2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-hint">← → arrow keys to navigate</div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const labels = document.querySelectorAll('.ch-label');
+  const counter = document.getElementById('slide-counter');
+  let cur = 0;
+  const total = slides.length;
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    labels[cur]?.classList.remove('active');
+    cur = Math.max(0, Math.min(n, total - 1));
+    slides[cur].classList.add('active');
+    labels[cur]?.classList.add('active');
+    counter.textContent = (cur + 1) + ' / ' + total;
+    labels[cur]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  labels.forEach((el, i) => { el.addEventListener('click', () => goTo(i)); });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(cur + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(cur - 1);
+  });
+
+  goTo(0);
+</script>
+</body>
+</html>
