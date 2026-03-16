@@ -28,7 +28,26 @@
   }
   #sidebar .logo span { color:var(--red); font-weight:800; font-size:14px; letter-spacing:2px; text-transform:uppercase; }
   #sidebar .logo div { color:rgba(255,255,255,0.45); font-size:10px; font-weight:500; letter-spacing:1px; margin-top:2px; }
-  .ch-group { margin-bottom:4px; }
+  .ch-group {
+    margin-bottom:6px; border-top:1px solid rgba(255,255,255,0.06);
+    border-bottom:1px solid rgba(255,255,255,0.04);
+  }
+  .ch-section {
+    width:100%; background:none; border:0; color:rgba(255,255,255,0.88); cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:10px 18px; font-size:10px; font-weight:800; letter-spacing:1.7px;
+    text-transform:uppercase; text-align:left;
+  }
+  .ch-section:hover { background:rgba(255,255,255,0.04); }
+  .ch-section-title { flex:1; }
+  .ch-section-caret {
+    color:rgba(255,255,255,0.4); font-size:11px; transition:transform .2s ease, color .2s ease;
+  }
+  .ch-group.open .ch-section-caret { transform:rotate(90deg); color:var(--white); }
+  .ch-items {
+    max-height:0; overflow:hidden; transition:max-height .28s ease;
+  }
+  .ch-group.open .ch-items { max-height:320px; }
   .ch-label {
     padding:8px 18px; font-size:10px; font-weight:700; letter-spacing:1.5px;
     text-transform:uppercase; color:rgba(255,255,255,0.35); cursor:pointer;
@@ -197,48 +216,68 @@
 <!-- SIDEBAR -->
 <nav id="sidebar">
   <div class="logo"><span>Takeda</span><div>AI Governance Brief</div></div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="0">The Decision</a>
-    <a class="ch-label" data-slide="1">Context & Stakes</a>
+  <div class="ch-group" data-start="0" data-end="1">
+    <button class="ch-section" type="button" data-slide="0" aria-expanded="false">
+      <span class="ch-section-title">Overview</span>
+      <span class="ch-section-caret">▶</span>
+    </button>
+    <div class="ch-items">
+      <a class="ch-label" data-slide="0">The Decision</a>
+      <a class="ch-label" data-slide="1">Context & Stakes</a>
+    </div>
   </div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="2">Claude CoWork</a>
-    <a class="ch-label" data-slide="3">CoWork Capabilities</a>
-    <a class="ch-label" data-slide="4">Access & Limits</a>
+  <div class="ch-group" data-start="2" data-end="9">
+    <button class="ch-section" type="button" data-slide="2" aria-expanded="false">
+      <span class="ch-section-title">Tools</span>
+      <span class="ch-section-caret">▶</span>
+    </button>
+    <div class="ch-items">
+      <a class="ch-label" data-slide="2">Claude CoWork</a>
+      <a class="ch-label" data-slide="3">CoWork Capabilities</a>
+      <a class="ch-label" data-slide="4">Access & Limits</a>
+      <a class="ch-label" data-slide="5">Microsoft Copilot</a>
+      <a class="ch-label" data-slide="6">Copilot Pricing</a>
+      <a class="ch-label" data-slide="7">Purview Advantage</a>
+      <a class="ch-label" data-slide="8">Head-to-Head</a>
+      <a class="ch-label" data-slide="9">The Critical Gap</a>
+    </div>
   </div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="5">Microsoft Copilot</a>
-    <a class="ch-label" data-slide="6">Copilot Pricing</a>
-    <a class="ch-label" data-slide="7">Purview Advantage</a>
+  <div class="ch-group" data-start="10" data-end="15">
+    <button class="ch-section" type="button" data-slide="10" aria-expanded="false">
+      <span class="ch-section-title">Risks & Compliance</span>
+      <span class="ch-section-caret">▶</span>
+    </button>
+    <div class="ch-items">
+      <a class="ch-label" data-slide="10">Risk: Exfiltration</a>
+      <a class="ch-label" data-slide="11">Prompt Injection</a>
+      <a class="ch-label" data-slide="12">Rule of Two</a>
+      <a class="ch-label" data-slide="13">Regulatory Walls</a>
+      <a class="ch-label" data-slide="14">EU AI Act</a>
+      <a class="ch-label" data-slide="15">Risk by Persona</a>
+    </div>
   </div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="8">Head-to-Head</a>
-    <a class="ch-label" data-slide="9">The Critical Gap</a>
+  <div class="ch-group" data-start="16" data-end="17">
+    <button class="ch-section" type="button" data-slide="16" aria-expanded="false">
+      <span class="ch-section-title">Governance Framework</span>
+      <span class="ch-section-caret">▶</span>
+    </button>
+    <div class="ch-items">
+      <a class="ch-label" data-slide="16">8 Controls</a>
+      <a class="ch-label" data-slide="17">Three-Tier Model</a>
+    </div>
   </div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="10">Risk: Exfiltration</a>
-    <a class="ch-label" data-slide="11">Prompt Injection</a>
-    <a class="ch-label" data-slide="12">Rule of Two</a>
-  </div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="13">Regulatory Walls</a>
-    <a class="ch-label" data-slide="14">EU AI Act</a>
-    <a class="ch-label" data-slide="15">Risk by Persona</a>
-  </div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="16">8 Controls</a>
-    <a class="ch-label" data-slide="17">Three-Tier Model</a>
-  </div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="18">Cost Optimization</a>
-    <a class="ch-label" data-slide="19">License Hygiene</a>
-  </div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="20">4-Phase Plan</a>
-    <a class="ch-label" data-slide="21">Review Cadence</a>
-  </div>
-  <div class="ch-group">
-    <a class="ch-label" data-slide="22">Recommendation</a>
+  <div class="ch-group" data-start="18" data-end="22">
+    <button class="ch-section" type="button" data-slide="18" aria-expanded="false">
+      <span class="ch-section-title">Implementation</span>
+      <span class="ch-section-caret">▶</span>
+    </button>
+    <div class="ch-items">
+      <a class="ch-label" data-slide="18">Cost Optimization</a>
+      <a class="ch-label" data-slide="19">License Hygiene</a>
+      <a class="ch-label" data-slide="20">4-Phase Plan</a>
+      <a class="ch-label" data-slide="21">Review Cadence</a>
+      <a class="ch-label" data-slide="22">Recommendation</a>
+    </div>
   </div>
 </nav>
 
@@ -919,21 +958,40 @@
 <script>
   const slides = document.querySelectorAll('.slide');
   const labels = document.querySelectorAll('.ch-label');
+  const groups = document.querySelectorAll('.ch-group');
+  const sections = document.querySelectorAll('.ch-section');
   const counter = document.getElementById('slide-counter');
   let cur = 0;
   const total = slides.length;
 
+  function syncAccordion(n) {
+    groups.forEach(group => {
+      const start = Number(group.dataset.start);
+      const end = Number(group.dataset.end);
+      const open = n >= start && n <= end;
+      group.classList.toggle('open', open);
+      group.querySelector('.ch-section')?.setAttribute('aria-expanded', String(open));
+    });
+  }
+
   function goTo(n) {
     slides[cur].classList.remove('active');
-    labels[cur]?.classList.remove('active');
+    labels.forEach(label => label.classList.remove('active'));
     cur = Math.max(0, Math.min(n, total - 1));
     slides[cur].classList.add('active');
     labels[cur]?.classList.add('active');
+    syncAccordion(cur);
     counter.textContent = (cur + 1) + ' / ' + total;
     labels[cur]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
-  labels.forEach((el, i) => { el.addEventListener('click', () => goTo(i)); });
+  labels.forEach(el => {
+    el.addEventListener('click', () => goTo(Number(el.dataset.slide)));
+  });
+
+  sections.forEach(section => {
+    section.addEventListener('click', () => goTo(Number(section.dataset.slide)));
+  });
 
   document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(cur + 1);
